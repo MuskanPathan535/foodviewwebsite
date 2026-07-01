@@ -2,33 +2,40 @@ import { Link } from 'react-router-dom';
 import '../../styles/auth-shared.css';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 
 const UserRegister = () => {
 
     const navigate = useNavigate();
+    const { updateAuth } = useAuth();
+    const [error, setError] = useState('');
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError('');
 
         const firstName = e.target.firstName.value;
         const lastName = e.target.lastName.value;
         const email = e.target.email.value;
         const password = e.target.password.value;
 
+        try {
+            const response = await axios.post("http://localhost:3000/api/auth/user/register", {
+                fullName: firstName + " " + lastName,
+                email,
+                password
+            },
+            {
+                withCredentials: true
+            })
 
-        const response = await axios.post("http://localhost:3000/api/auth/user/register", {
-            fullName: firstName + " " + lastName,
-            email,
-            password
-        },
-        {
-            withCredentials: true
-        })
-
-        console.log(response.data);
-
-        navigate("/")
-
+            updateAuth({ user: response.data.user });
+            navigate("/home")
+        } catch (err) {
+            const message = err?.response?.data?.message || '';
+            setError(message.includes('user already exists') ? 'Email already registered.' : 'Registration failed.');
+        }
     };
 
     return (
@@ -60,6 +67,7 @@ const UserRegister = () => {
                         <label htmlFor="password">Password</label>
                         <input id="password" name="password" type="password" placeholder="••••••••" autoComplete="new-password" />
                     </div>
+                    {error && <p className="auth-error">{error}</p>}
                     <button className="auth-submit" type="submit">Sign Up</button>
                 </form>
                 <div className="auth-alt-action">

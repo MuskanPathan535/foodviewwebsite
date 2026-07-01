@@ -1,26 +1,33 @@
 import '../../styles/auth-shared.css';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 
 const FoodPartnerLogin = () => {
 
   const navigate = useNavigate();
+  const { updateAuth } = useAuth();
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
 
     const email = e.target.email.value;
     const password = e.target.password.value;
 
-    const response = await axios.post("http://localhost:3000/api/auth/food-partner/login", {
-      email,
-      password
-    }, { withCredentials: true });
+    try {
+      const response = await axios.post("http://localhost:3000/api/auth/food-partner/login", {
+        email,
+        password
+      }, { withCredentials: true });
 
-    console.log(response.data);
-
-    navigate("/create-food"); // Redirect to create food page after login
-
+      updateAuth({ foodPartner: response.data.foodPartner });
+      navigate("/create-food");
+    } catch (err) {
+      setError('Wrong email or password.');
+    }
   };
 
   return (
@@ -39,6 +46,7 @@ const FoodPartnerLogin = () => {
             <label htmlFor="password">Password</label>
             <input id="password" name="password" type="password" placeholder="Password" autoComplete="current-password" />
           </div>
+          {error && <p className="auth-error">{error}</p>}
           <button className="auth-submit" type="submit">Sign In</button>
         </form>
         <div className="auth-alt-action">

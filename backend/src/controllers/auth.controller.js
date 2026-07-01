@@ -165,6 +165,45 @@ async function loginFoodPartner(req, res) {
     })
 }
 
+async function getCurrentUser(req, res) {
+    const token = req.cookies?.token
+    if (!token) {
+        return res.status(200).json({})
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET)
+        const user = await userModel.findById(decoded.id)
+        if (user) {
+            return res.status(200).json({
+                user: {
+                    _id: user._id,
+                    email: user.email,
+                    fullName: user.fullName,
+                },
+            })
+        }
+
+        const foodPartner = await foodPartnerModel.findById(decoded.id)
+        if (foodPartner) {
+            return res.status(200).json({
+                foodPartner: {
+                    _id: foodPartner._id,
+                    email: foodPartner.email,
+                    name: foodPartner.name,
+                    address: foodPartner.address,
+                    contactName: foodPartner.contactName,
+                    phone: foodPartner.phone,
+                },
+            })
+        }
+
+        return res.status(200).json({})
+    } catch (error) {
+        return res.status(200).json({})
+    }
+}
+
 function logoutFoodPartner(req, res) {
     res.clearCookie("token");
     res.status(200).json({
@@ -178,5 +217,6 @@ module.exports = {
     logoutUser,
     registerFoodPartner,
     loginFoodPartner,
-    logoutFoodPartner
+    logoutFoodPartner,
+    getCurrentUser,
 }

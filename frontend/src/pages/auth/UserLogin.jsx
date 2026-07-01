@@ -1,26 +1,34 @@
 import '../../styles/auth-shared.css';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 
 const UserLogin = () => {
 
   const navigate = useNavigate();
+  const { updateAuth } = useAuth();
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
 
     const email = e.target.email.value;
     const password = e.target.password.value;
 
-    const response = await axios.post("http://localhost:3000/api/auth/user/login", {
-      email,
-      password
-    }, { withCredentials: true });
+    try {
+      const response = await axios.post("http://localhost:3000/api/auth/user/login", {
+        email,
+        password
+      }, { withCredentials: true });
 
-    console.log(response.data);
-
-    navigate("/"); // Redirect to home after login
-
+      updateAuth({ user: response.data.user });
+      navigate("/home");
+    } catch (err) {
+      const message = err?.response?.data?.message || 'Wrong email or password.';
+      setError('Wrong email or password.');
+    }
   };
 
   return (
@@ -39,6 +47,7 @@ const UserLogin = () => {
             <label htmlFor="password">Password</label>
             <input id="password" name="password" type="password" placeholder="••••••••" autoComplete="current-password" />
           </div>
+          {error && <p className="auth-error">{error}</p>}
           <button className="auth-submit" type="submit">Sign In</button>
         </form>
         <div className="auth-alt-action">

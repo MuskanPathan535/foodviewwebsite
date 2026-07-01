@@ -23,11 +23,13 @@ const foodSchema = new mongoose.Schema({
     savesCount: {
         type: Number,
         default: 0
-    }
+    },
+    commentsCount: {
+        type: Number,
+        default: 0,
+    },
 })
 
-
 const foodModel = mongoose.model("food", foodSchema);
-
 
 module.exports = foodModel;

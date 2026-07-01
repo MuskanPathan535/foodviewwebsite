@@ -41,9 +41,8 @@ router.post('/',
     foodController.createFood)
 
 
-/* GET /api/food/ [protected] */
+/* GET /api/food/ */
 router.get("/",
-    authMiddleware.authUserMiddleware,
     foodController.getFoodItems)
 
 
@@ -57,6 +56,10 @@ router.post('/save',
     foodController.saveFood
 )
 
+router.post('/comment',
+    authMiddleware.authUserMiddleware,
+    foodController.commentFood
+)
 
 router.get('/save',
     authMiddleware.authUserMiddleware,

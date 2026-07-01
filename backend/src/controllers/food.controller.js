@@ -39,6 +39,7 @@
 // }
 
 const foodModel = require('../models/food.model');
+const commentModel = require('../models/comment.model');
 const storageService = require('../services/storage.service');
 const likeModel = require("../models/likes.model")
 const saveModel = require("../models/save.model")
@@ -64,10 +65,70 @@ async function createFood(req, res) {
 
 async function getFoodItems(req, res) {
     const foodItems = await foodModel.find({})
+    const foodIds = foodItems.map((item) => item._id)
+    const comments = await commentModel.find({ food: { $in: foodIds } }).sort({ createdAt: 1 }).lean()
+
+    const foodItemsWithComments = foodItems.map((item) => {
+        const itemComments = comments
+            .filter((comment) => comment.food.toString() === item._id.toString())
+            .map((comment) => ({
+                id: comment._id,
+                userName: comment.userName,
+                avatar: comment.avatar,
+                text: comment.text,
+                createdAt: comment.createdAt,
+            }))
+
+        return {
+            ...item.toObject(),
+            comments: itemComments,
+        }
+    })
+
     res.status(200).json({
         message: "Food items fetched successfully",
-        foodItems
+        foodItems: foodItemsWithComments
     })
+}
+
+async function commentFood(req, res) {
+    const { foodId, text } = req.body;
+    if (!text || !text.trim()) {
+        return res.status(400).json({ message: "Comment text is required" });
+    }
+
+    const userName = req.user?.fullName || req.user?.name || "Guest";
+    const avatar = req.user?.avatar || `https://api.dicebear.com/6.x/initials/svg?seed=${encodeURIComponent(userName)}`;
+
+    const comment = await commentModel.create({
+        user: req.user._id,
+        food: foodId,
+        userName,
+        avatar,
+        text: text.trim(),
+    });
+
+    const updatedFood = await foodModel.findByIdAndUpdate(
+        foodId,
+        { $inc: { commentsCount: 1 } },
+        { new: true }
+    );
+
+    if (!updatedFood) {
+        return res.status(404).json({ message: "Food item not found" });
+    }
+
+    res.status(201).json({
+        message: "Comment added successfully",
+        comment: {
+            id: comment._id,
+            userName: comment.userName,
+            avatar: comment.avatar,
+            text: comment.text,
+            createdAt: comment.createdAt,
+        },
+        commentsCount: updatedFood.commentsCount,
+    });
 }
 
 
@@ -173,6 +234,7 @@ async function getSaveFood(req, res) {
 module.exports = {
     createFood,
     getFoodItems,
+    commentFood,
     likeFood,
     saveFood,
     getSaveFood

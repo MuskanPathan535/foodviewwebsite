@@ -2,13 +2,18 @@ import { Link } from 'react-router-dom';
 import '../../styles/auth-shared.css';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 
 const FoodPartnerRegister = () => {
 
   const navigate = useNavigate();
+  const { updateAuth } = useAuth();
+  const [error, setError] = useState('');
   
-  const handleSubmit = (e) => { 
+  const handleSubmit = async (e) => { 
     e.preventDefault();
+    setError('');
 
     const businessName = e.target.businessName.value;
     const contactName = e.target.contactName.value;
@@ -17,21 +22,22 @@ const FoodPartnerRegister = () => {
     const password = e.target.password.value;
     const address = e.target.address.value;
 
-    axios.post("http://localhost:3000/api/auth/food-partner/register", {
-      name:businessName,
-      contactName,
-      phone,
-      email,
-      password,
-      address
-    }, { withCredentials: true })
-      .then(response => {
-        console.log(response.data);
-        navigate("/create-food"); // Redirect to create food page after successful registration
-      })
-      .catch(error => {
-        console.error("There was an error registering!", error);
-      });
+    try {
+      const response = await axios.post("http://localhost:3000/api/auth/food-partner/register", {
+        name:businessName,
+        contactName,
+        phone,
+        email,
+        password,
+        address
+      }, { withCredentials: true });
+
+      updateAuth({ foodPartner: response.data.foodPartner });
+      navigate("/create-food");
+    } catch (err) {
+      const message = err?.response?.data?.message || '';
+      setError(message.includes('account already exists') ? 'Email already registered.' : 'Registration failed.');
+    }
   };
 
   return (
@@ -72,6 +78,7 @@ const FoodPartnerRegister = () => {
             <input id="address" name="address" placeholder="123 Market Street" autoComplete="street-address" />
             <p className="small-note">Full address helps customers find you faster.</p>
           </div>
+          {error && <p className="auth-error">{error}</p>}
           <button className="auth-submit" type="submit">Create Partner Account</button>
         </form>
         <div className="auth-alt-action">
