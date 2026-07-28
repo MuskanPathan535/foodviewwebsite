@@ -18,7 +18,7 @@ const FoodPartnerLogin = () => {
     const password = e.target.password.value;
 
     try {
-      const response = await axios.post("http://localhost:3000/api/auth/food-partner/login", {
+      const response = await axios.post("https://foodview-api.onrender.com/api/auth/food-partner/login", {
         email,
         password
       }, { withCredentials: true });

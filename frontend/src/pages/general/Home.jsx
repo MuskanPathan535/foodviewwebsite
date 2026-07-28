@@ -32,7 +32,7 @@ const Home = () => {
   const navigate = useNavigate()
 
   useEffect(() => {
-    axios.get('http://localhost:3000/api/food', { withCredentials: true })
+    axios.get('https://foodview-api.onrender.com/api/food', { withCredentials: true })
       .then((response) => {
         const fetched = (response.data.foodItems || []).map((food) => ({
           ...food,
@@ -66,7 +66,7 @@ const Home = () => {
 
     try {
       const response = await axios.post(
-        'http://localhost:3000/api/food/like',
+        'https://foodview-api.onrender.com/api/food/like',
         { foodId: item._id },
         { withCredentials: true }
       )
@@ -87,7 +87,7 @@ const Home = () => {
 
     try {
       const response = await axios.post(
-        'http://localhost:3000/api/food/save',
+        'https://foodview-api.onrender.com/api/food/save',
         { foodId: item._id },
         { withCredentials: true }
       )
@@ -124,7 +124,7 @@ const Home = () => {
 
     try {
       const response = await axios.post(
-        'http://localhost:3000/api/food/comment',
+        'https://foodview-api.onrender.com/api/food/comment',
         { foodId: activeItem._id, text },
         { withCredentials: true }
       )

@@ -18,7 +18,7 @@ export const AuthProvider = ({ children }) => {
 
     const loadSession = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/api/auth/me')
+        const response = await axios.get('https://foodview-api.onrender.com/api/auth/me')
         const data = response.data ?? {}
 
         if (data.user) {
@@ -49,9 +49,9 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       if (auth.type === 'partner') {
-        await axios.get('http://localhost:3000/api/auth/food-partner/logout')
+        await axios.get('https://foodview-api.onrender.com/api/auth/food-partner/logout')
       } else {
-        await axios.get('http://localhost:3000/api/auth/user/logout')
+        await axios.get('https://foodview-api.onrender.com/api/auth/user/logout')
       }
     } catch (error) {
       // ignore
