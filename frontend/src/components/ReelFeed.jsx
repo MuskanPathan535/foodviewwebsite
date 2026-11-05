@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom'
 // - onLike: (item) => void | Promise<void>
 // - onSave: (item) => void | Promise<void>
 // - emptyMessage: string
-const ReelFeed = ({ items = [], onLike, onSave, onComment, onVisitStore, emptyMessage = 'No videos yet.' }) => {
+const ReelFeed = ({ items = [], onLike, onSave, onComment, onVisitStore,onOrderNow, emptyMessage = 'No videos yet.' }) => {
   const videoRefs = useRef(new Map())
 
   useEffect(() => {
@@ -98,6 +98,7 @@ const ReelFeed = ({ items = [], onLike, onSave, onComment, onVisitStore, emptyMe
               <div className="reel-content">
                 <p className="reel-description" title={item.description}>{item.description}</p>
                 {item.foodPartner && (
+                   <div className="reel-buttons">
                   <button
                     type="button"
                     className="reel-btn"
@@ -106,6 +107,15 @@ const ReelFeed = ({ items = [], onLike, onSave, onComment, onVisitStore, emptyMe
                   >
                     Visit store
                   </button>
+                  <button
+                    type="button"
+                    className="reel-btn order-now-btn"
+                    onClick={onOrderNow ? () => onOrderNow(item) : undefined}
+                    aria-label="Order Now"
+                  >
+                    Order Now
+                  </button>
+                 </div>                 
                 )}
               </div>
             </div>

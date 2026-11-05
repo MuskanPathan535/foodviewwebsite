@@ -52,6 +52,7 @@ async function createFood(req, res) {
     const foodItem = await foodModel.create({
         name: req.body.name,
         description: req.body.description,
+        price: Number(req.body.price),
         video: fileUploadResult.url,
         foodPartner: req.foodPartner._id
     })
@@ -66,6 +67,21 @@ async function createFood(req, res) {
 async function getFoodItems(req, res) {
     const foodItems = await foodModel.find({})
     const foodIds = foodItems.map((item) => item._id)
+    const likeCounts = await likeModel.aggregate([
+    {
+        $group: {
+            _id: "$food",
+            count: { $sum: 1 }
+        }
+    }
+]);
+
+const likeCountMap = new Map(
+    likeCounts.map((like) => [
+        like._id.toString(),
+        like.count
+    ])
+);
     const comments = await commentModel.find({ food: { $in: foodIds } }).sort({ createdAt: 1 }).lean()
 
     const foodItemsWithComments = foodItems.map((item) => {
@@ -81,6 +97,7 @@ async function getFoodItems(req, res) {
 
         return {
             ...item.toObject(),
+            likeCount: likeCountMap.get(item._id.toString()) || 0,
             comments: itemComments,
         }
     })
@@ -89,6 +106,7 @@ async function getFoodItems(req, res) {
         message: "Food items fetched successfully",
         foodItems: foodItemsWithComments
     })
+   
 }
 
 async function commentFood(req, res) {
@@ -132,46 +150,107 @@ async function commentFood(req, res) {
 }
 
 
+// async function likeFood(req, res) {
+//     const { foodId } = req.body;
+//     const user = req.user;
+
+//     const isAlreadyLiked = await likeModel.findOne({
+//         user: user._id,
+//         food: foodId
+//     })
+
+//     if (isAlreadyLiked) {
+//         await likeModel.deleteOne({
+//             user: user._id,
+//             food: foodId
+//         })
+
+//         await foodModel.findByIdAndUpdate(foodId, {
+//             $inc: { likeCount: -1 }
+//         })
+
+//         return res.status(200).json({
+//             message: "Food unliked successfully"
+//         })
+//     }
+
+//     const like = await likeModel.create({
+//         user: user._id,
+//         food: foodId
+//     })
+
+//     await foodModel.findByIdAndUpdate(foodId, {
+//         $inc: { likeCount: 1 }
+//     })
+
+//     res.status(201).json({
+//         message: "Food liked successfully",
+//         like
+//     })
+
+// }
+
+
 async function likeFood(req, res) {
     const { foodId } = req.body;
     const user = req.user;
 
-    const isAlreadyLiked = await likeModel.findOne({
-        user: user._id,
-        food: foodId
-    })
-
-    if (isAlreadyLiked) {
-        await likeModel.deleteOne({
-            user: user._id,
-            food: foodId
-        })
-
-        await foodModel.findByIdAndUpdate(foodId, {
-            $inc: { likeCount: -1 }
-        })
-
-        return res.status(200).json({
-            message: "Food unliked successfully"
-        })
+    if (!foodId) {
+        return res.status(400).json({
+            message: "Food ID is required"
+        });
     }
 
-    const like = await likeModel.create({
+    const food = await foodModel.findById(foodId);
+
+    if (!food) {
+        return res.status(404).json({
+            message: "Food item not found"
+        });
+    }
+
+    const existingLike = await likeModel.findOne({
         user: user._id,
         food: foodId
-    })
+    });
 
+    let isLiked;
+
+    if (existingLike) {
+        await likeModel.deleteOne({
+            _id: existingLike._id
+        });
+
+        isLiked = false;
+    } else {
+        await likeModel.create({
+            user: user._id,
+            food: foodId
+        });
+
+        isLiked = true;
+    }
+
+    // Calculate the actual number of likes
+    const actualLikeCount = await likeModel.countDocuments({
+        food: foodId
+    });
+
+    // Synchronize the count in the Food collection
     await foodModel.findByIdAndUpdate(foodId, {
-        $inc: { likeCount: 1 }
-    })
+        $set: {
+            likeCount: actualLikeCount
+        }
+    });
 
-    res.status(201).json({
-        message: "Food liked successfully",
-        like
-    })
-
+    return res.status(200).json({
+        message: isLiked
+            ? "Food liked successfully"
+            : "Food unliked successfully",
+        isLiked,
+        likeCount: actualLikeCount
+    });
 }
-
 async function saveFood(req, res) {
 
     const { foodId } = req.body;

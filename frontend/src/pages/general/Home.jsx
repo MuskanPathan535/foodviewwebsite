@@ -118,7 +118,21 @@ const Home = () => {
       navigate(`/food-partner/${item.foodPartner}`)
     }
   }
+const handleOrderNow = (item) => {
+  if (!isAuthenticated) {
+    openAuthPrompt('login')
+    return
+  }
 
+  if (auth.type !== 'user') {
+    alert('Please login with a customer account to place an order.')
+    return
+  }
+
+  navigate(`/order/${item._id}`, {
+    state: { food: item }
+  })
+}
   const handleCommentSubmit = async (text) => {
     if (!activeItem) return
 
@@ -172,6 +186,7 @@ const Home = () => {
         onSave={handleSave}
         onComment={handleCommentClick}
         onVisitStore={handleVisitStore}
+        onOrderNow={handleOrderNow}
         emptyMessage="No videos available."
       />
 

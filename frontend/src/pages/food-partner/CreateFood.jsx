@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 
 const CreateFood = () => {
     const [ name, setName ] = useState('');
+    const [price, setPrice] = useState('');
     const [ description, setDescription ] = useState('');
     const [ videoFile, setVideoFile ] = useState(null);
     const [ videoURL, setVideoURL ] = useState('');
@@ -56,6 +57,7 @@ const CreateFood = () => {
 
         formData.append('name', name);
         formData.append('description', description);
+        formData.append('price', price);
         formData.append("mama", videoFile);
 
         const response = await axios.post("https://foodview-api.onrender.com/api/food", formData, {
@@ -68,7 +70,7 @@ const CreateFood = () => {
         // setName(''); setDescription(''); setVideoFile(null);
     };
 
-    const isDisabled = useMemo(() => !name.trim() || !videoFile, [ name, videoFile ]);
+    const isDisabled = useMemo(() => !name.trim() || !videoFile || !price || Number(price) <= 0, [ name, videoFile, price ]);
 
     return (
         <div className="create-food-page">
@@ -143,6 +145,20 @@ const CreateFood = () => {
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             required
+                        />
+                    </div>
+
+                     <div className="field-group">
+                        <label htmlFor="foodPrice">Price (₹)</label>
+                        <input
+                           id="foodPrice"
+                           type="number"
+                           placeholder="e.g., 199"
+                           min="0.01"
+                           step="0.01"
+                           value={price}
+                           onChange={(e) => setPrice(e.target.value)}
+                           required
                         />
                     </div>
 

@@ -91,6 +91,21 @@
   max-width: 90ch;
 }
 
+.reel-buttons {
+    display: flex;
+    align-items: center;
+    gap: 500px;
+}
+
+.order-now-btn {
+    background-color: #16a36a;
+    color: white;
+}
+
+.order-now-btn:hover {
+    background-color: #128456;
+}
+
 .reel-btn {
   align-self: flex-start;
   background: var(--color-accent);
