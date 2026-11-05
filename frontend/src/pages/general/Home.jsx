@@ -58,27 +58,58 @@ const Home = () => {
     setAuthPromptOpen(true)
   }
 
-  const handleLike = async (item) => {
-    if (!isAuthenticated) {
-      openAuthPrompt('login')
-      return
-    }
+  // const handleLike = async (item) => {
+  //   if (!isAuthenticated) {
+  //     openAuthPrompt('login')
+  //     return
+  //   }
 
-    try {
-      const response = await axios.post(
-        'https://foodview-api.onrender.com/api/food/like',
-        { foodId: item._id },
-        { withCredentials: true }
-      )
-      const delta = response.data.like ? 1 : -1
-      setVideos((prev) => prev.map((video) => (
-        video._id === item._id ? { ...video, likeCount: Math.max(0, (video.likeCount ?? 0) + delta) } : video
-      )))
-    } catch {
-      openAuthPrompt('login')
-    }
+  //   try {
+  //     const response = await axios.post(
+  //       'https://foodview-api.onrender.com/api/food/like',
+  //       { foodId: item._id },
+  //       { withCredentials: true }
+  //     )
+  //     const delta = response.data.like ? 1 : -1
+  //     setVideos((prev) => prev.map((video) => (
+  //       video._id === item._id ? { ...video, likeCount: Math.max(0, (video.likeCount ?? 0) + delta) } : video
+  //     )))
+  //   } catch {
+  //     openAuthPrompt('login')
+  //   }
+  // }
+const handleLike = async (item) => {
+  if (!isAuthenticated) {
+    openAuthPrompt('login')
+    return
   }
 
+  try {
+    const response = await axios.post(
+      'https://foodview-api.onrender.com/api/food/like',
+      { foodId: item._id },
+      { withCredentials: true }
+    )
+
+    setVideos((prev) =>
+      prev.map((video) =>
+        video._id === item._id
+          ? {
+              ...video,
+              isLiked: response.data.isLiked,
+              likeCount: response.data.likeCount
+            }
+          : video
+      )
+    )
+  } catch (err) {
+    if (err.response?.status === 401) {
+      openAuthPrompt('login')
+    } else {
+      console.error('Like failed:', err)
+    }
+  }
+}
   const handleSave = async (item) => {
     if (!isAuthenticated) {
       openAuthPrompt('login')

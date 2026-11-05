@@ -62,8 +62,8 @@ const ReelFeed = ({ items = [], onLike, onSave, onComment, onVisitStore,onOrderN
                 <div className="reel-action-group">
                   <button
                     onClick={onLike ? () => onLike(item) : undefined}
-                    className="reel-action"
-                    aria-label="Like"
+                    className={`reel-action ${item.isLiked ? 'is-liked' : ''}`}
+                    aria-label={item.isLiked ? 'Unlike' : 'Like'}
                   >
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 22l7.8-8.6 1-1a5.5 5.5 0 0 0 0-7.8z" />

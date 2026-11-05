@@ -173,3 +173,11 @@
 .empty-state{
   position: absolute; inset: 0; display: grid; place-items: center; color: #fff;
 }
+.reel-action.is-liked {
+    color: #ff3040;
+}
+
+.reel-action.is-liked svg {
+    fill: #ff3040;
+    stroke: #ff3040;
+}
